@@ -28,7 +28,7 @@ enum PricingPlan {
     }
 
     static PricingPlan resolvePlanFromApiKey(String apiKey) {
-        if(PricingPlanService.isValidAPIKey(apiKey))
+        if (PricingPlanService.isValidAPIKey(apiKey))
             return FREE;
         return FREE;
     }

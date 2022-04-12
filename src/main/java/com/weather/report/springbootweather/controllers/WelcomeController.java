@@ -41,33 +41,33 @@ public class WelcomeController {
                                                     @RequestParam(required = true) String q) {
         String countryCD = null;
         String cityCD = null;
-        String description ="Invalid Request : ";
-        String resp =null;
+        String description = "Invalid Request : ";
+        String resp = null;
         ResponseEntity<String> responseString = null;
         try {
-            if(isValidString(q) && isValidString(apiKey) ){
+            if (isValidString(q) && isValidString(apiKey)) {
                 String[] strParams = q.split(",");
-                if(2 != strParams.length)
+                if (2 != strParams.length)
                     description += " q parameter should have city code,country code..";
-                else if(!PricingPlanService.isValidAPIKey(apiKey))
+                else if (!PricingPlanService.isValidAPIKey(apiKey))
                     description += " Invalid API key..";
-                else if(2 == strParams.length) {
+                else if (2 == strParams.length) {
                     cityCD = strParams[0];
                     countryCD = strParams[1];
                     Bucket bucket = pricingPlanService.resolveBucket(apiKey);
                     ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
                     if (probe.isConsumed()) {
-                        String url = "http://api.openweathermap.org/data/2.5/weather?q="+q+"&APPID="+apiKey;
-                        responseString = restTemplate.getForEntity(url,String.class);
+                        String url = "http://api.openweathermap.org/data/2.5/weather?q=" + q + "&APPID=" + apiKey;
+                        responseString = restTemplate.getForEntity(url, String.class);
                         resp = responseString.getBody().toString();
                         description = getDescriptionfromResponse(resp);
-                        weatherMapDataRepository.save(new WeatherMapData(cityCD,countryCD,apiKey,resp));
+                        weatherMapDataRepository.save(new WeatherMapData(cityCD, countryCD, apiKey, resp));
                         return ResponseEntity.ok()
                                 .header("X-Rate-Limit-Remaining", Long.toString(probe.getRemainingTokens()))
                                 .body(description);
                     }
-                    description = "hourly limit has been exceeded for apiKey =   "+apiKey;
-                    weatherMapDataRepository.save(new WeatherMapData(cityCD,countryCD,apiKey,resp));
+                    description = "hourly limit has been exceeded for apiKey =   " + apiKey;
+                    weatherMapDataRepository.save(new WeatherMapData(cityCD, countryCD, apiKey, resp));
                     long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
                     return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                             .header("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill))
@@ -80,14 +80,15 @@ public class WelcomeController {
             return new ResponseEntity<>(description, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    String getDescriptionfromResponse(String resp){
-        String description =resp;
+
+    String getDescriptionfromResponse(String resp) {
+        String description = resp;
         JsonObject jsonObject = new JsonParser().parse(resp).getAsJsonObject();
-        if(null != jsonObject){
-            if(jsonObject.has("weather")){
+        if (null != jsonObject) {
+            if (jsonObject.has("weather")) {
                 JsonArray arr = jsonObject.getAsJsonArray("weather");
-                for(JsonElement j : arr){
-                    if(arr.size() > 1)
+                for (JsonElement j : arr) {
+                    if (arr.size() > 1)
                         description += "," + String.valueOf(j.getAsJsonObject().get("description"));
                     else
                         description = String.valueOf(j.getAsJsonObject().get("description"));
@@ -97,12 +98,13 @@ public class WelcomeController {
         }
         return description;
     }
-    boolean isValidString(String str){
-        if(StringUtils.isBlank(str))
-            return  false;
-        else if("null".equalsIgnoreCase(str.trim()))
+
+    boolean isValidString(String str) {
+        if (StringUtils.isBlank(str))
+            return false;
+        else if ("null".equalsIgnoreCase(str.trim()))
             return false;
 
-        return true ;
+        return true;
     }
 }

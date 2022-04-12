@@ -29,7 +29,8 @@ public class PricingPlanService {
                 .addLimit(limit)
                 .build();
     }
-    public static boolean isValidAPIKey(String apiKey){
+
+    public static boolean isValidAPIKey(String apiKey) {
         boolean isValid = false;
         switch (apiKey) {
             case "181f996c74f767dbd25ffc6daa37fd38":
@@ -40,7 +41,7 @@ public class PricingPlanService {
                 isValid = true;
                 break;
             default:
-                isValid =false ;
+                isValid = false;
                 break;
         }
         return isValid;
